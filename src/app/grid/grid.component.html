@@ -1,3 +1,7 @@
+<div class="simulation-button">
+    <button mat-stroked-button (click)="launchSimulation()">Démarrer la simulation</button>
+</div>
+
 <div *ngFor="let row of grid; let i = index" class="row">
     <div *ngFor="let case of row; let j = index" class="case" [ngClass]="getCaseStateClass(case)">
     </div>

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 
 enum CaseState {
   Forest,
@@ -18,15 +18,20 @@ export class GridComponent {
   grid: CaseState[][] = []; // Tableau d'enumération
   probability = 0.75; //Probabilité qu'une case Forêt s'enflamme
 
-  readonly simulationInterval = setInterval(() => {
-    this.updateGrid();
-  }, 1000);
+  currentStep = 0;
+  allSteps = new Map();
+
+  simulationInterval: any;
 
   constructor() {
     this.initializeGrid();
   }
 
   ngOnInit(): void {}
+
+  ngOnDestroy(): void {
+    this.stopSimulation();
+  }
 
   initializeGrid(): void {
     for (let i = 0; i < this.numRows; i++){
@@ -35,6 +40,8 @@ export class GridComponent {
 
     // Une case devient en feu
     this.grid[2][2] = CaseState.Fire;
+
+    this.allSteps.set(this.currentStep, this.grid);
   }
 
   updateGrid(): void {
@@ -71,10 +78,13 @@ export class GridComponent {
       }
     }
 
+    this.currentStep +=1;
+    this.allSteps.set(this.currentStep, updatedGrid);
+
     this.grid = updatedGrid;
 
     if (!fireExists){
-      clearInterval(this.simulationInterval);
+      this.stopSimulation();
     }
   }
 
@@ -89,6 +99,16 @@ export class GridComponent {
         }
       }
     }
+  }
+
+  launchSimulation(): void {
+    this.simulationInterval = setInterval(() => {
+      this.updateGrid();
+    }, 1000);
+  }
+
+  stopSimulation(): void {
+    clearInterval(this.simulationInterval);
   }
 
   getCaseStateClass(caseState: CaseState): string {
