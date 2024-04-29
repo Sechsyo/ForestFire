@@ -38,8 +38,13 @@ export class GridComponent {
       this.grid[i] = Array(this.numCols).fill(CaseState.Forest); // On remplit toutes les cases de Forêt
     }
 
-    // Une case devient en feu
-    this.grid[2][2] = CaseState.Fire;
+    // Choisir aléatoirement entre 1 et 3 positions pour démarrer le feu
+    const numFires = Math.floor(Math.random() * 3) + 1;
+    for (let i = 0; i < numFires; i++) {
+      const randomRow = Math.floor(Math.random() * this.numRows);
+      const randomCol = Math.floor(Math.random() * this.numCols);
+      this.grid[randomRow][randomCol] = CaseState.Fire;
+    }
 
     this.allSteps.set(this.currentStep, this.grid);
   }
