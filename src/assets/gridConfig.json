@@ -1,0 +1,12 @@
+{
+    "gridDimensions": {
+      "numRows": 10,
+      "numCols": 8
+    },
+    "initialFirePositions": [
+      {"row": 2, "col": 3},
+      {"row": 4, "col": 6}
+    ],
+    "propagationProbability": 0.6
+  }
+  

@@ -1,9 +1,19 @@
 import { Component, OnDestroy } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
 enum CaseState {
   Forest,
   Fire,
   Ash
+}
+
+interface GridConfig {
+  gridDimensions: {
+    numRows: number;
+    numCols: number;
+  };
+  initialFirePositions: { row: number; col: number }[];
+  propagationProbability: number;
 }
 
 @Component({
@@ -13,34 +23,46 @@ enum CaseState {
 })
 export class GridComponent {
 
-  numRows = 6; // Nombre de lignes de la grille
+  /*numRows = 6; // Nombre de lignes de la grille
   numCols = 6;// Nombre de colonnes de la grille
-  grid: CaseState[][] = []; // Tableau d'enumération
-  probability = 0.75; //Probabilité qu'une case Forêt s'enflamme
+  probability = 0.75; //Probabilité qu'une case Forêt s'enflamme*/
 
+  grid: CaseState[][] = []; // Tableau d'enumération
+  config!: GridConfig;
   simulationInterval: any;
 
-  constructor() {
-    this.initializeGrid();
+  constructor(private http: HttpClient) {
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.loadConfig();
+  }
 
   ngOnDestroy(): void {
     this.stopSimulation();
   }
 
-  initializeGrid(): void {
-    for (let i = 0; i < this.numRows; i++){
-      this.grid[i] = Array(this.numCols).fill(CaseState.Forest); // On remplit toutes les cases de Forêt
-    }
+  loadConfig(): void {
+    this.http.get<GridConfig>('assets/gridConfig.json').subscribe(
+      (data) => {
+        this.config = data;
+        this.initializeGrid();
+      },
+      (error) => {
+        console.error('Error loading simulation configuration:', error);
+      }
+    );
+  }
 
-    // On choisi aléatoirement entre 1 et 3 positions pour démarrer le feu
-    const numFires = Math.floor(Math.random() * 3) + 1;
-    for (let i = 0; i < numFires; i++) {
-      const randomRow = Math.floor(Math.random() * this.numRows);
-      const randomCol = Math.floor(Math.random() * this.numCols);
-      this.grid[randomRow][randomCol] = CaseState.Fire;
+  initializeGrid(): void {
+    const { numRows, numCols } = this.config.gridDimensions;
+    this.grid = new Array(numRows).fill([]).map(() => new Array(numCols).fill(CaseState.Forest));
+
+    for (const pos of this.config.initialFirePositions) {
+      const { row, col } = pos;
+      if (row >= 0 && row < numRows && col >= 0 && col < numCols) {
+        this.grid[row][col] = CaseState.Fire;
+      }
     }
   }
 
@@ -49,12 +71,12 @@ export class GridComponent {
 
     let updatedGrid: CaseState[][] = [];
 
-    for (let i = 0; i < this.numRows; i++) {
+    for (let i = 0; i < this.grid.length; i++) {
       updatedGrid[i] = [...this.grid[i]]; 
     }
 
-    for (let i = 0; i < this.numRows; i++) {
-      for (let j = 0; j < this.numCols; j++) {
+    for (let i = 0; i < this.grid.length; i++) {
+      for (let j = 0; j < this.grid[i].length; j++) {
         switch (this.grid[i][j]) {
           case CaseState.Forest: 
             break;
@@ -86,14 +108,12 @@ export class GridComponent {
   }
 
   propagateFire(grid: CaseState[][], row: number, col: number): void {
-    // Vérifier si la case existe
-    if (row >= 0 && row < this.numRows && col >= 0 && col < this.numCols) {
-      // Vérifier si la case est une Forêt
-      if (grid[row][col] == CaseState.Forest) {
-        // Propager le feu selon la probabilité
-        if (Math.random() < this.probability) {
-          grid[row][col] = CaseState.Fire;
-        }
+    const { numRows, numCols } = this.config.gridDimensions;
+    const { propagationProbability } = this.config;
+    
+    if (row >= 0 && row < numRows && col >= 0 && col < numCols) {
+      if (grid[row][col] == CaseState.Forest && Math.random() < propagationProbability) {
+        grid[row][col] = CaseState.Fire;
       }
     }
   }
