@@ -23,10 +23,6 @@ interface GridConfig {
 })
 export class GridComponent {
 
-  /*numRows = 6; // Nombre de lignes de la grille
-  numCols = 6;// Nombre de colonnes de la grille
-  probability = 0.75; //Probabilité qu'une case Forêt s'enflamme*/
-
   grid: CaseState[][] = []; // Tableau d'enumération
   config!: GridConfig;
   simulationInterval: any;
@@ -42,6 +38,9 @@ export class GridComponent {
     this.stopSimulation();
   }
 
+  /**
+   * Méthode qui charge le fichier configuration
+   */
   loadConfig(): void {
     this.http.get<GridConfig>('assets/gridConfig.json').subscribe(
       (data) => {
@@ -54,6 +53,9 @@ export class GridComponent {
     );
   }
 
+  /**
+   * Méthode qui initialise la grille de départ
+   */
   initializeGrid(): void {
     const { numRows, numCols } = this.config.gridDimensions;
     this.grid = new Array(numRows).fill([]).map(() => new Array(numCols).fill(CaseState.Forest));
@@ -66,11 +68,14 @@ export class GridComponent {
     }
   }
 
+  /**
+   * Méthode qui met à jour la grille selon la simulation
+   */
   updateGrid(): void {
     let fireExists = false;
 
+    // Initialisation d'une grille temporaire qui recoit les modifications
     let updatedGrid: CaseState[][] = [];
-
     for (let i = 0; i < this.grid.length; i++) {
       updatedGrid[i] = [...this.grid[i]]; 
     }
@@ -102,11 +107,18 @@ export class GridComponent {
 
     this.grid = updatedGrid;
 
+    // On stop la simulation s'il n'y a plus de feu
     if (!fireExists){
       this.stopSimulation();
     }
   }
 
+  /**
+   *   Méthode qui simule la propagtion du feu
+   * @param grid La grille à mettre à jour 
+   * @param row le numéro de ligne
+   * @param col le numéro de colonne
+   */
   propagateFire(grid: CaseState[][], row: number, col: number): void {
     const { numRows, numCols } = this.config.gridDimensions;
     const { propagationProbability } = this.config;
@@ -118,16 +130,27 @@ export class GridComponent {
     }
   }
 
+  /**
+   * Méthode qui lance la simulation
+   */
   launchSimulation(): void {
     this.simulationInterval = setInterval(() => {
       this.updateGrid();
     }, 1000);
   }
 
+  /**
+   * Méthode qui stop la simulation
+   */
   stopSimulation(): void {
     clearInterval(this.simulationInterval);
   }
 
+  /**
+   * Méthode qui retourne la bonne class css pour la case donné
+   * @param caseState 
+   * @returns 
+   */
   getCaseStateClass(caseState: CaseState): string {
     switch (caseState) {
       case CaseState.Forest :
