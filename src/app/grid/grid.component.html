@@ -2,6 +2,12 @@
     <button mat-stroked-button (click)="launchSimulation()">Démarrer la simulation</button>
 </div>
 
+<div class="step-slider">
+    <mat-slider min="1" [max]="allSteps.size" step="1" showTickMarks discrete >
+        <input matSliderThumb value="1">
+    </mat-slider>
+</div>
+
 <div *ngFor="let row of grid; let i = index" class="row">
     <div *ngFor="let case of row; let j = index" class="case" [ngClass]="getCaseStateClass(case)">
     </div>
