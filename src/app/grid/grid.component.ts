@@ -18,9 +18,6 @@ export class GridComponent {
   grid: CaseState[][] = []; // Tableau d'enumération
   probability = 0.75; //Probabilité qu'une case Forêt s'enflamme
 
-  currentStep = 0;
-  allSteps = new Map();
-
   simulationInterval: any;
 
   constructor() {
@@ -38,15 +35,13 @@ export class GridComponent {
       this.grid[i] = Array(this.numCols).fill(CaseState.Forest); // On remplit toutes les cases de Forêt
     }
 
-    // Choisir aléatoirement entre 1 et 3 positions pour démarrer le feu
+    // On choisi aléatoirement entre 1 et 3 positions pour démarrer le feu
     const numFires = Math.floor(Math.random() * 3) + 1;
     for (let i = 0; i < numFires; i++) {
       const randomRow = Math.floor(Math.random() * this.numRows);
       const randomCol = Math.floor(Math.random() * this.numCols);
       this.grid[randomRow][randomCol] = CaseState.Fire;
     }
-
-    this.allSteps.set(this.currentStep, this.grid);
   }
 
   updateGrid(): void {
@@ -82,9 +77,6 @@ export class GridComponent {
         }
       }
     }
-
-    this.currentStep +=1;
-    this.allSteps.set(this.currentStep, updatedGrid);
 
     this.grid = updatedGrid;
 
